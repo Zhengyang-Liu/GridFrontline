@@ -36,7 +36,7 @@ public partial class GameBoard : Node2D
 		UpdateHover();
 	}
 
-	public override void _UnhandledInput(InputEvent @event)
+	public override void _Input(InputEvent @event)
 	{
 		if (@event is InputEventMouseButton mb
 			&& mb.Pressed

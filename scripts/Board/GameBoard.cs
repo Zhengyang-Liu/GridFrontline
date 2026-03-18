@@ -20,6 +20,7 @@ public partial class GameBoard : Node2D
 	public delegate void CellClickedEventHandler(GridCell cell);
 
 	private GridCell[,] _cells = new GridCell[Rows, Cols];
+	private GridCell _hoveredCell;
 
 	public GridCell[,] Cells => _cells;
 
@@ -28,6 +29,46 @@ public partial class GameBoard : Node2D
 		CreatePlayerZone();
 		CreateCorridorVisual();
 		CreateEnemyZoneVisual();
+	}
+
+	public override void _Process(double delta)
+	{
+		UpdateHover();
+	}
+
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton mb
+			&& mb.Pressed
+			&& mb.ButtonIndex == MouseButton.Left)
+		{
+			var cell = GetCellUnderMouse();
+			if (cell != null)
+			{
+				EmitSignal(SignalName.CellClicked, cell);
+				GetViewport().SetInputAsHandled();
+			}
+		}
+	}
+
+	private GridCell GetCellUnderMouse()
+	{
+		var localPos = ToLocal(GetGlobalMousePosition());
+		int col = (int)(localPos.X / GridCell.CellSize);
+		int row = (int)(localPos.Y / GridCell.CellSize);
+		if (row >= 0 && row < Rows && col >= 0 && col < Cols)
+			return _cells[row, col];
+		return null;
+	}
+
+	private void UpdateHover()
+	{
+		var newHover = GetCellUnderMouse();
+		if (newHover == _hoveredCell) return;
+
+		_hoveredCell?.SetHovered(false);
+		_hoveredCell = newHover;
+		_hoveredCell?.SetHovered(true);
 	}
 
 	// ---- Zone Creation ----
@@ -42,7 +83,6 @@ public partial class GameBoard : Node2D
 				cell.Row = row;
 				cell.Col = col;
 				cell.Position = new Vector2(col * GridCell.CellSize, row * GridCell.CellSize);
-				cell.CellClicked += OnCellClicked;
 				AddChild(cell);
 				_cells[row, col] = cell;
 			}
@@ -84,11 +124,6 @@ public partial class GameBoard : Node2D
 	}
 
 	// ---- Public API ----
-
-	private void OnCellClicked(GridCell cell)
-	{
-		EmitSignal(SignalName.CellClicked, cell);
-	}
 
 	/// <summary>
 	/// Global position of the corridor entrance for a given row.

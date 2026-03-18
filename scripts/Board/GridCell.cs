@@ -3,18 +3,10 @@ using Godot;
 namespace GridFrontline;
 
 /// <summary>
-/// A single cell on the player grid. Handles hover, click, and building placement.
-/// Extends Area2D for mouse detection.
+/// A single cell on the player grid. Hover and click are driven by GameBoard.
 /// </summary>
-public partial class GridCell : Area2D
+public partial class GridCell : Node2D
 {
-	[Signal]
-	public delegate void CellClickedEventHandler(GridCell cell);
-	[Signal]
-	public delegate void CellHoveredEventHandler(GridCell cell);
-	[Signal]
-	public delegate void CellExitedEventHandler(GridCell cell);
-
 	public const int CellSize = 80;
 
 	public int Row { get; set; }
@@ -38,14 +30,6 @@ public partial class GridCell : Area2D
 		_background.Color = NormalColor;
 		AddChild(_background);
 
-		// Collision shape
-		var collision = new CollisionShape2D();
-		var shape = new RectangleShape2D();
-		shape.Size = new Vector2(CellSize - 2, CellSize - 2);
-		collision.Shape = shape;
-		collision.Position = new Vector2(CellSize / 2f, CellSize / 2f);
-		AddChild(collision);
-
 		// Coord debug label (small, bottom-right)
 		_coordLabel = new Label();
 		_coordLabel.Text = $"{Row},{Col}";
@@ -53,34 +37,15 @@ public partial class GridCell : Area2D
 		_coordLabel.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.5f, 0.6f));
 		_coordLabel.AddThemeFontSizeOverride("font_size", 10);
 		AddChild(_coordLabel);
-
-		// Signals
-		MouseEntered += OnMouseEntered;
-		MouseExited += OnMouseExited;
-		InputEvent += OnInputEvent;
 	}
 
-	private void OnMouseEntered()
+	public void SetHovered(bool hovered)
 	{
-		if (!IsOccupied)
+		if (_background == null) return;
+		if (hovered && !IsOccupied)
 			_background.Color = HoverColor;
-		EmitSignal(SignalName.CellHovered, this);
-	}
-
-	private void OnMouseExited()
-	{
-		_background.Color = IsOccupied ? OccupiedColor : NormalColor;
-		EmitSignal(SignalName.CellExited, this);
-	}
-
-	private void OnInputEvent(Node viewport, InputEvent @event, long shapeIdx)
-	{
-		if (@event is InputEventMouseButton mb
-			&& mb.Pressed
-			&& mb.ButtonIndex == MouseButton.Left)
-		{
-			EmitSignal(SignalName.CellClicked, this);
-		}
+		else
+			_background.Color = IsOccupied ? OccupiedColor : NormalColor;
 	}
 
 	public void PlaceBuilding(Building building)

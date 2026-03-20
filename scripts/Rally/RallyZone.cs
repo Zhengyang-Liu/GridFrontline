@@ -88,7 +88,7 @@ public partial class RallyZone : Node2D
     {
         if (_waitingUnits.Count == 0) return;
 
-        var exitTarget = _gameBoard.GetCorridorExit();
+        var exitTarget = _gameBoard.GetEnemyBaseCorePosition();
         int i = 0;
 
         foreach (var kvp in _waitingUnits)

@@ -145,4 +145,24 @@ public partial class GameBoard : Node2D
 		float localY = Rows * GridCell.CellSize / 2f;
 		return GlobalPosition + new Vector2(localX, localY);
 	}
+
+	/// <summary>
+	/// Global position of the enemy base core (deep in enemy zone).
+	/// </summary>
+	public Vector2 GetEnemyBaseCorePosition()
+	{
+		float localX = Cols * GridCell.CellSize + GapSize + RallyWidth + GapSize
+		               + CorridorWidth + GapSize + EnemyZoneWidth / 2f;
+		float localY = Rows * GridCell.CellSize / 2f;
+		return GlobalPosition + new Vector2(localX, localY);
+	}
+
+	/// <summary>
+	/// X coordinate of the right edge of the corridor (start of enemy zone).
+	/// </summary>
+	public float GetEnemyZoneStartX()
+	{
+		return GlobalPosition.X + Cols * GridCell.CellSize
+		       + GapSize + RallyWidth + GapSize + CorridorWidth + GapSize;
+	}
 }

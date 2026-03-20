@@ -48,9 +48,10 @@ public partial class GameManager : Node2D
     {
         if (CurrentState != GameState.Playing) return;
 
+        CheckPlayerBaseDamage();
+        CheckEnemyBaseDamage(delta);
         CheckWinLose();
         Units.CleanupDead();
-        CheckPlayerBaseDamage();
     }
 
     private void CreateEconomy()
@@ -253,6 +254,29 @@ public partial class GameManager : Node2D
                 PlayerBaseHp -= (int)enemy.AttackDamage;
                 enemy.TakeDamage(enemy.MaxHp * 2); // Kill the unit
                 UpdatePlayerBaseHpBar();
+            }
+        }
+    }
+
+    private double _enemyBaseDamageTimer;
+
+    private void CheckEnemyBaseDamage(double delta)
+    {
+        if (Enemy.IsDestroyed()) return;
+
+        // Player units in the enemy zone periodically damage the enemy base
+        float enemyZoneX = Board.GetEnemyZoneStartX();
+        var playerUnits = Units.GetAliveUnits(Team.Player);
+
+        _enemyBaseDamageTimer += delta;
+        if (_enemyBaseDamageTimer < 0.5) return; // Damage tick every 0.5s
+        _enemyBaseDamageTimer = 0;
+
+        foreach (var unit in playerUnits)
+        {
+            if (unit.GlobalPosition.X >= enemyZoneX)
+            {
+                Enemy.TakeDamage((int)unit.AttackDamage);
             }
         }
     }

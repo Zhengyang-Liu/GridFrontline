@@ -178,11 +178,11 @@ public partial class Unit : CharacterBody2D
             var dir = (DefaultTarget - GlobalPosition).Normalized();
             Velocity = dir * MoveSpeed;
 
-            // Reached the end — stop (base attack will come in Step 6)
-            if (GlobalPosition.DistanceTo(DefaultTarget) < 10f)
+            // Reached the enemy base area — stay and attack base
+            if (GlobalPosition.DistanceTo(DefaultTarget) < 30f)
             {
                 Velocity = Vector2.Zero;
-                State = UnitState.Fighting; // Will try to find target or idle
+                // Stay in Moving state so GameManager can detect us at the base
                 return;
             }
         }

@@ -150,8 +150,8 @@ public partial class Unit : CharacterBody2D
 
     private void ProcessMoving(double delta)
     {
-        // Try to find an enemy
-        var target = Manager?.GetNearestEnemy(GlobalPosition, UnitTeam, SearchRange);
+        // Search the entire battlefield for enemies (no range limit)
+        var target = Manager?.GetNearestEnemy(GlobalPosition, UnitTeam, float.MaxValue);
 
         if (target != null)
         {
@@ -182,7 +182,6 @@ public partial class Unit : CharacterBody2D
             if (GlobalPosition.DistanceTo(DefaultTarget) < 30f)
             {
                 Velocity = Vector2.Zero;
-                // Stay in Moving state so GameManager can detect us at the base
                 return;
             }
         }

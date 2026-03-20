@@ -4,7 +4,7 @@ namespace GridFrontline;
 
 /// <summary>
 /// A building that periodically produces soldier units.
-/// Production is blocked while a unit waits in the rally zone.
+/// Units are deployed directly onto the battlefield.
 /// </summary>
 public partial class MilitaryBuilding : Building
 {
@@ -12,19 +12,8 @@ public partial class MilitaryBuilding : Building
     public delegate void UnitProducedEventHandler(Unit unit, MilitaryBuilding source);
 
     private double _timer;
-    private bool _productionBlocked;
     private Label _progressLabel;
     private ColorRect _progressBar;
-
-    public bool ProductionBlocked
-    {
-        get => _productionBlocked;
-        set
-        {
-            _productionBlocked = value;
-            if (_productionBlocked) _timer = 0;
-        }
-    }
 
     public override void _Ready()
     {
@@ -54,21 +43,11 @@ public partial class MilitaryBuilding : Building
     {
         base.Initialize(data);
         _timer = 0;
-        _productionBlocked = false;
     }
 
     public override void _Process(double delta)
     {
         if (Data == null) return;
-
-        if (_productionBlocked)
-        {
-            if (_progressLabel != null)
-                _progressLabel.Text = "⏸ 等待";
-            if (_progressBar != null)
-                _progressBar.Size = new Vector2(0, 6);
-            return;
-        }
 
         _timer += delta;
         float progress = Mathf.Clamp((float)(_timer / Data.ProduceInterval), 0f, 1f);
@@ -93,6 +72,5 @@ public partial class MilitaryBuilding : Building
         else
             unit.Initialize();
         EmitSignal(SignalName.UnitProduced, unit, this);
-        ProductionBlocked = true;
     }
 }

@@ -13,7 +13,6 @@ public partial class GameManager : Node2D
 {
     public EconomyManager Economy { get; private set; }
     public GameBoard Board { get; private set; }
-    public RallyZone Rally { get; private set; }
     public UnitManager Units { get; private set; }
     public EnemySpawner Enemy { get; private set; }
     public HUD Hud { get; private set; }
@@ -36,7 +35,6 @@ public partial class GameManager : Node2D
         CreateUnitManager();
         CreateCamera();
         CreateBoard();
-        CreateRallyZone();
         CreateEnemySpawner();
         CreatePlayerBase();
         CreateUI();
@@ -93,19 +91,6 @@ public partial class GameManager : Node2D
         Board.Name = "GameBoard";
         Board.Position = new Vector2(GameBoard.BoardOriginX, GameBoard.BoardOriginY);
         AddChild(Board);
-    }
-
-    private void CreateRallyZone()
-    {
-        Rally = new RallyZone();
-        Rally.Name = "RallyZone";
-        float rallyX = GameBoard.BoardOriginX
-                       + GameBoard.Cols * GridCell.CellSize
-                       + GameBoard.GapSize;
-        Rally.Position = new Vector2(rallyX, GameBoard.BoardOriginY);
-        Rally.SetGameBoard(Board);
-        Rally.SetUnitManager(Units);
-        AddChild(Rally);
     }
 
     private void CreateEnemySpawner()
@@ -236,7 +221,16 @@ public partial class GameManager : Node2D
 
     private void OnUnitProduced(Unit unit, MilitaryBuilding source)
     {
-        Rally.AddUnit(unit, source);
+        // Deploy directly onto the battlefield
+        int row = source.Cell?.Row ?? 0;
+        var entrance = Board.GetCorridorEntrance(row);
+        var target = Board.GetEnemyBaseCorePosition();
+
+        Board.AddChild(unit);
+        unit.UnitTeam = Team.Player;
+        unit.Manager = Units;
+        unit.Deploy(entrance, target);
+        Units.Register(unit);
     }
 
     // ---- Win/Lose ----

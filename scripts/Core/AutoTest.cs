@@ -133,14 +133,7 @@ public partial class AutoTest : Node2D
         var barracks = new MilitaryBuilding();
         barracks.Initialize(BuildingDatabase.Barracks);
 
-        Assert(!barracks.ProductionBlocked, "Production starts unblocked");
         Assert(barracks.Data.ProduceInterval == 6f, "Produce interval = 6s");
-
-        barracks.ProductionBlocked = true;
-        Assert(barracks.ProductionBlocked, "Production can be blocked");
-
-        barracks.ProductionBlocked = false;
-        Assert(!barracks.ProductionBlocked, "Production can be unblocked");
 
         // Test Unit creation
         var unit = new Unit();

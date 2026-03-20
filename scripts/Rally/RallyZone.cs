@@ -15,6 +15,7 @@ public partial class RallyZone : Node2D
 
     private readonly Dictionary<MilitaryBuilding, Unit> _waitingUnits = new();
     private GameBoard _gameBoard;
+    private UnitManager _unitManager;
     private ColorRect _background;
     private Button _deployButton;
     private Label _countLabel;
@@ -59,6 +60,11 @@ public partial class RallyZone : Node2D
         _gameBoard = board;
     }
 
+    public void SetUnitManager(UnitManager manager)
+    {
+        _unitManager = manager;
+    }
+
     public void AddUnit(Unit unit, MilitaryBuilding source)
     {
         _waitingUnits[source] = unit;
@@ -96,7 +102,10 @@ public partial class RallyZone : Node2D
 
             // Reparent unit to game board so it can move freely
             unit.Reparent(_gameBoard);
+            unit.UnitTeam = Team.Player;
+            unit.Manager = _unitManager;
             unit.Deploy(entrance, exitTarget);
+            _unitManager?.Register(unit);
 
             // Unblock the building
             building.ProductionBlocked = false;

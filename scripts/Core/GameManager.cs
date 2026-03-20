@@ -11,6 +11,7 @@ public partial class GameManager : Node2D
     public EconomyManager Economy { get; private set; }
     public GameBoard Board { get; private set; }
     public RallyZone Rally { get; private set; }
+    public UnitManager Units { get; private set; }
     public HUD Hud { get; private set; }
     public BuildPanel Panel { get; private set; }
 
@@ -21,6 +22,7 @@ public partial class GameManager : Node2D
     public override void _Ready()
     {
         CreateEconomy();
+        CreateUnitManager();
         CreateCamera();
         CreateBoard();
         CreateRallyZone();
@@ -34,6 +36,13 @@ public partial class GameManager : Node2D
         Economy = new EconomyManager();
         Economy.Name = "EconomyManager";
         AddChild(Economy);
+    }
+
+    private void CreateUnitManager()
+    {
+        Units = new UnitManager();
+        Units.Name = "UnitManager";
+        AddChild(Units);
     }
 
     private void CreateCamera()
@@ -72,6 +81,7 @@ public partial class GameManager : Node2D
                        + GameBoard.GapSize;
         Rally.Position = new Vector2(rallyX, GameBoard.BoardOriginY);
         Rally.SetGameBoard(Board);
+        Rally.SetUnitManager(Units);
         AddChild(Rally);
     }
 

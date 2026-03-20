@@ -20,6 +20,7 @@ public partial class AutoTest : Node2D
         TestBuildingData();
         TestBuildingPlacement();
         TestMilitaryProduction();
+        TestCombat();
 
         GD.Print($"\n===== Results: {_passed} passed, {_failed} failed =====");
 
@@ -149,5 +150,62 @@ public partial class AutoTest : Node2D
 
         unit.Deploy(new Godot.Vector2(0, 0), new Godot.Vector2(100, 0));
         Assert(unit.State == Unit.UnitState.Moving, "Unit state = Moving after deploy");
+    }
+
+    private void TestCombat()
+    {
+        GD.Print("\n-- Combat System --");
+
+        var mgr = new UnitManager();
+        AddChild(mgr);
+
+        // Create player unit
+        var player = new Unit();
+        player.UnitTeam = Team.Player;
+        player.Manager = mgr;
+        player.Initialize();
+        player.MaxHp = 100;
+        player.CurrentHp = 100;
+        player.State = Unit.UnitState.Moving;
+        AddChild(player);
+        player.GlobalPosition = new Vector2(100, 100);
+        mgr.Register(player);
+
+        // Create enemy unit
+        var enemy = new Unit();
+        enemy.UnitTeam = Team.Enemy;
+        enemy.Manager = mgr;
+        enemy.Initialize();
+        enemy.MaxHp = 80;
+        enemy.CurrentHp = 80;
+        enemy.State = Unit.UnitState.Moving;
+        AddChild(enemy);
+        enemy.GlobalPosition = new Vector2(120, 100);
+        mgr.Register(enemy);
+
+        // Test target finding
+        var found = mgr.GetNearestEnemy(player.GlobalPosition, Team.Player, 300f);
+        Assert(found == enemy, "Player finds enemy as target");
+
+        var foundReverse = mgr.GetNearestEnemy(enemy.GlobalPosition, Team.Enemy, 300f);
+        Assert(foundReverse == player, "Enemy finds player as target");
+
+        // Test no friendly fire — searching as Player should never return a Player unit
+        Assert(found != player, "No friendly fire in target search");
+
+        // Test damage
+        enemy.TakeDamage(30);
+        Assert(enemy.CurrentHp == 50, "Enemy takes 30 damage -> 50 HP");
+
+        enemy.TakeDamage(50);
+        Assert(enemy.CurrentHp == 0, "Enemy takes 50 more -> 0 HP");
+        Assert(enemy.State == Unit.UnitState.Dead, "Enemy is dead");
+
+        // Dead unit should not be found
+        var afterDeath = mgr.GetNearestEnemy(player.GlobalPosition, Team.Player, 300f);
+        Assert(afterDeath == null, "Dead enemy not found in search");
+
+        mgr.QueueFree();
+        player.QueueFree();
     }
 }

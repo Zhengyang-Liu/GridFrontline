@@ -27,9 +27,9 @@ public partial class BuildPanel : Control
         AnchorTop = 1f;
         AnchorRight = 0.5f;
         AnchorBottom = 1f;
-        OffsetLeft = -350;
+        OffsetLeft = -450;
         OffsetTop = -90;
-        OffsetRight = 350;
+        OffsetRight = 450;
         OffsetBottom = -10;
 
         var panel = new PanelContainer();
@@ -47,6 +47,8 @@ public partial class BuildPanel : Control
         AddBuildingButton(hbox, BuildingDatabase.SwordsmanBarracks);
         AddBuildingButton(hbox, BuildingDatabase.ArcherRange);
         AddBuildingButton(hbox, BuildingDatabase.Stable);
+        AddBuildingButton(hbox, BuildingDatabase.Wall);
+        AddBuildingButton(hbox, BuildingDatabase.ArrowTower);
     }
 
     private void AddBuildingButton(HBoxContainer parent, BuildingData data)

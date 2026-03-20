@@ -58,4 +58,30 @@ public static class BuildingDatabase
 
     // Keep old name for backward compatibility with tests
     public static BuildingData Barracks => SwordsmanBarracks;
+
+    public static BuildingData Wall => new()
+    {
+        BuildingName = "城墙",
+        Cost = 30,
+        MaxHp = 300,
+        ProduceInterval = 0f,
+        ProduceAmount = 0,
+        BuildingColor = new Godot.Color(0.55f, 0.55f, 0.55f),
+        DisplayChar = "墙",
+        IsDefenseBuilding = true,
+        AttackRange = 0f
+    };
+
+    public static BuildingData ArrowTower => new()
+    {
+        BuildingName = "箭塔",
+        Cost = 80,
+        MaxHp = 120,
+        ProduceInterval = 1.5f,
+        ProduceAmount = 8,
+        BuildingColor = new Godot.Color(0.6f, 0.35f, 0.8f),
+        DisplayChar = "塔",
+        IsDefenseBuilding = true,
+        AttackRange = 350f
+    };
 }

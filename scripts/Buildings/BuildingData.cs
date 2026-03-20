@@ -17,4 +17,5 @@ public partial class BuildingData : Resource
     [Export] public Color BuildingColor { get; set; } = Colors.White;
     [Export] public string DisplayChar { get; set; } = "?";
     [Export] public bool IsUnitProducer { get; set; } = false;
+    [Export] public UnitData ProducedUnit { get; set; }
 }

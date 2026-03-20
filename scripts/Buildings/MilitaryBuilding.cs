@@ -88,7 +88,10 @@ public partial class MilitaryBuilding : Building
     private void ProduceUnit()
     {
         var unit = new Unit();
-        unit.Initialize();
+        if (Data.ProducedUnit != null)
+            unit.Initialize(Data.ProducedUnit, Team.Player);
+        else
+            unit.Initialize();
         EmitSignal(SignalName.UnitProduced, unit, this);
         ProductionBlocked = true;
     }

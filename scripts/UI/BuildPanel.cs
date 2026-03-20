@@ -1,18 +1,17 @@
 using Godot;
+using System.Collections.Generic;
 
 namespace GridFrontline;
 
 /// <summary>
 /// Panel at the bottom of the screen for selecting buildings to place.
-/// Phase 1: hardcoded Farm and Barracks buttons.
 /// </summary>
 public partial class BuildPanel : Control
 {
     [Signal]
     public delegate void BuildingSelectedEventHandler(BuildingData data);
 
-    private Button _farmButton;
-    private Button _barracksButton;
+    private readonly List<Button> _buttons = new();
     private Button _selectedButton;
 
     private static readonly Color SelectedColor = new(0.3f, 0.7f, 0.3f);
@@ -28,9 +27,9 @@ public partial class BuildPanel : Control
         AnchorTop = 1f;
         AnchorRight = 0.5f;
         AnchorBottom = 1f;
-        OffsetLeft = -200;
+        OffsetLeft = -350;
         OffsetTop = -90;
-        OffsetRight = 200;
+        OffsetRight = 350;
         OffsetBottom = -10;
 
         var panel = new PanelContainer();
@@ -40,33 +39,28 @@ public partial class BuildPanel : Control
 
         var hbox = new HBoxContainer();
         hbox.Alignment = BoxContainer.AlignmentMode.Center;
-        hbox.AddThemeConstantOverride("separation", 20);
+        hbox.AddThemeConstantOverride("separation", 10);
         panel.AddChild(hbox);
 
-        // Farm button
-        var farmData = BuildingDatabase.Farm;
-        _farmButton = CreateBuildButton(farmData);
-        _farmButton.Pressed += () => SelectBuilding(farmData, _farmButton);
-        hbox.AddChild(_farmButton);
-
-        // Barracks button
-        var barracksData = BuildingDatabase.Barracks;
-        _barracksButton = CreateBuildButton(barracksData);
-        _barracksButton.Pressed += () => SelectBuilding(barracksData, _barracksButton);
-        hbox.AddChild(_barracksButton);
+        // All available buildings
+        AddBuildingButton(hbox, BuildingDatabase.Farm);
+        AddBuildingButton(hbox, BuildingDatabase.SwordsmanBarracks);
+        AddBuildingButton(hbox, BuildingDatabase.ArcherRange);
+        AddBuildingButton(hbox, BuildingDatabase.Stable);
     }
 
-    private Button CreateBuildButton(BuildingData data)
+    private void AddBuildingButton(HBoxContainer parent, BuildingData data)
     {
         var btn = new Button();
-        btn.CustomMinimumSize = new Vector2(150, 60);
+        btn.CustomMinimumSize = new Vector2(130, 60);
         btn.Text = $"{data.DisplayChar} {data.BuildingName}\n💰 {data.Cost}";
-        return btn;
+        btn.Pressed += () => SelectBuilding(data, btn);
+        parent.AddChild(btn);
+        _buttons.Add(btn);
     }
 
     private void SelectBuilding(BuildingData data, Button btn)
     {
-        // Toggle selection
         if (_selectedButton == btn)
         {
             ClearSelection();

@@ -24,6 +24,8 @@ public partial class Unit : CharacterBody2D
     public Team UnitTeam { get; set; } = Team.Player;
     public Unit CurrentTarget { get; private set; }
     public UnitManager Manager { get; set; }
+    public UnitData Data { get; private set; }
+    public Skill ActiveSkill { get; private set; }
 
     // Default march direction when no target found
     public Vector2 DefaultTarget { get; set; }
@@ -34,10 +36,7 @@ public partial class Unit : CharacterBody2D
     private ColorRect _hpBarFill;
     private bool _visualCreated;
     private double _attackTimer;
-
-    // Visual config per team
-    private static readonly Color PlayerColor = new(0.25f, 0.45f, 0.9f);
-    private static readonly Color EnemyColor = new(0.85f, 0.25f, 0.2f);
+    private Color _unitColor;
 
     public override void _Ready()
     {
@@ -54,7 +53,7 @@ public partial class Unit : CharacterBody2D
         _visual = new ColorRect();
         _visual.Size = new Vector2(18, 18);
         _visual.Position = new Vector2(-9, -9);
-        _visual.Color = UnitTeam == Team.Player ? PlayerColor : EnemyColor;
+        _visual.Color = _unitColor;
         AddChild(_visual);
 
         // Collision shape
@@ -84,6 +83,39 @@ public partial class Unit : CharacterBody2D
         CurrentHp = MaxHp;
         State = UnitState.InRally;
         _attackTimer = 0;
+        _unitColor = UnitTeam == Team.Player
+            ? new Color(0.25f, 0.45f, 0.9f)
+            : new Color(0.85f, 0.25f, 0.2f);
+    }
+
+    /// <summary>
+    /// Initialize from UnitData with team and optional skill.
+    /// </summary>
+    public void Initialize(UnitData data, Team team)
+    {
+        Data = data;
+        MaxHp = data.MaxHp;
+        MoveSpeed = data.MoveSpeed;
+        AttackDamage = data.AttackDamage;
+        AttackSpeed = data.AttackSpeed;
+        AttackRange = data.AttackRange;
+        SearchRange = data.SearchRange;
+        UnitTeam = team;
+        _unitColor = data.UnitColor;
+        CurrentHp = MaxHp;
+        State = UnitState.InRally;
+        _attackTimer = 0;
+
+        // Create skill if defined
+        if (!string.IsNullOrEmpty(data.SkillId))
+        {
+            ActiveSkill = SkillFactory.Create(data.SkillId);
+            if (ActiveSkill != null)
+            {
+                ActiveSkill.Owner = this;
+                AddChild(ActiveSkill);
+            }
+        }
     }
 
     public void Deploy(Vector2 startGlobal, Vector2 defaultTarget)
@@ -105,6 +137,14 @@ public partial class Unit : CharacterBody2D
             case UnitState.Fighting:
                 ProcessFighting(delta);
                 break;
+        }
+
+        // Update and check skill
+        if (State != UnitState.Dead && State != UnitState.InRally && ActiveSkill != null)
+        {
+            ActiveSkill.UpdateSkill(delta);
+            if (ActiveSkill.CanActivate())
+                ActiveSkill.Activate();
         }
     }
 
@@ -183,6 +223,7 @@ public partial class Unit : CharacterBody2D
     {
         if (CurrentTarget == null || CurrentTarget.State == UnitState.Dead) return;
         CurrentTarget.TakeDamage((int)AttackDamage);
+        ActiveSkill?.OnOwnerAttack();
     }
 
     // ---- Damage & Death ----
@@ -193,6 +234,7 @@ public partial class Unit : CharacterBody2D
 
         CurrentHp -= damage;
         UpdateHealthBar();
+        ActiveSkill?.OnOwnerTakeDamage(damage);
 
         if (CurrentHp <= 0)
         {
@@ -221,6 +263,7 @@ public partial class Unit : CharacterBody2D
     {
         State = UnitState.Dead;
         Velocity = Vector2.Zero;
+        ActiveSkill?.OnOwnerDeath();
         Manager?.Unregister(this);
 
         // Death flash effect then remove

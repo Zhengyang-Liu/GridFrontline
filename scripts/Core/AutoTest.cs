@@ -90,7 +90,7 @@ public partial class AutoTest : Node2D
         Assert(!farm.IsUnitProducer, "Farm is not unit producer");
 
         var barracks = BuildingDatabase.Barracks;
-        Assert(barracks.BuildingName == "兵营", "Barracks name = 兵营");
+        Assert(barracks.BuildingName == "剑士营", "Barracks name = 剑士营");
         Assert(barracks.Cost == 60, "Barracks cost = 60");
         Assert(barracks.IsUnitProducer, "Barracks is unit producer");
     }

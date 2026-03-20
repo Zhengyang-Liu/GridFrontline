@@ -221,15 +221,17 @@ public partial class GameManager : Node2D
 
     private void OnUnitProduced(Unit unit, MilitaryBuilding source)
     {
-        // Deploy directly onto the battlefield
+        // Spawn at the barracks position, march right toward enemy base
         int row = source.Cell?.Row ?? 0;
-        var entrance = Board.GetCorridorEntrance(row);
+        int col = source.Cell?.Col ?? 0;
+        float spawnX = Board.GlobalPosition.X + (col + 1) * GridCell.CellSize;
+        float spawnY = Board.GlobalPosition.Y + row * GridCell.CellSize + GridCell.CellSize / 2f;
         var target = Board.GetEnemyBaseCorePosition();
 
         Board.AddChild(unit);
         unit.UnitTeam = Team.Player;
         unit.Manager = Units;
-        unit.Deploy(entrance, target);
+        unit.Deploy(new Vector2(spawnX, spawnY), target);
         Units.Register(unit);
     }
 
